@@ -1,0 +1,4 @@
+external_id,customer_name,customer_email,customer_cpf,loan_value,payment_term,realty_address
+000003-5,João da Silva,joao@silva.com,779.044.849-86,150000.00,120,"Av Silva Jardim, 496, Curitiba, PR"
+000031-0,João das Neves,joao@neves.com,258.280.504-19,300000.00,180,"Av Silva Jardim, 497, Curitiba, PR"
+000040-A,José Johnson,jose@johnson.com,741.574.644-94,120000.00,80,"Av Silva Jardim, 498, Curitiba, PR"
