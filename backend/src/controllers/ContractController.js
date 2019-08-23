@@ -1,58 +1,62 @@
 const path = require('path');
-const fs = require('fs');
-const csv = require('fast-csv');
 const csvjson = require('csvjson');
 const Contract = require('../models/Contracts');
 
-const contracts = [], installments = [];
-
-
 module.exports = {
     async store(req, res, next){
-        if (!('contracts' in req.files) && !('delayed_installments' in req.files)) {
-            return res.status(400).send('No files were uploaded.');
-        }
-        if (path.extname(req.files.contracts.name) === '.csv') {
-            // open uploaded file
-            // csv.parseFile(req.files.contracts.name)
-            // .on("data", function (data) {
-            //     contracts.push(data); // push each row
-            // })
-            // .on("end", function () {
-            //     console.log(contracts)
-            //     // fs.unlinkSync(req.file.path);   // remove temp file
-            //     //process "fileRows" and respond
-            // });
-        } else {
-            return res.status(400).send('Error, the file is not csv.');
-        }
-        
+        let objContracts = [];
+        let objInstallments = [];
+        if (req.files.delayed_installments) {
+            if (!('contracts' in req.files) && !('delayed_installments' in req.files)) {
+                return res.status(400).send('No files were uploaded.');
+            }
+            if (path.extname(req.files.contracts.name) === '.csv') {
+                // open uploaded file
+                
+                const contracts = csvjson.toObject(req.files.contracts.data.toString());
+                for(let i in contracts) {
+                    console.log(contracts[i])
+                    let contractExists = await Contract.findOne({ _id: contracts[i].external_id });
+                    if (contractExists) {
+                        objContracts.push(contractExists);
+                    } else {
+                        const { 
+                            external_id : _id, 
+                            customer_name,
+                            customer_email,
+                            customer_cpf,
+                            loan_value,
+                            payment_term,
+                            realty_address
+                        } = contracts[i];
+                        const objContract = await Contract.create({
+                            _id,
+                            customer_name,
+                            customer_email,
+                            customer_cpf,
+                            loan_value,
+                            payment_term,
+                            realty_address
+                        });
+                        objContracts.push(objContract);
+                    }
+                }
+            } else {
+                return res.status(400).send('Error, the file is not csv.');
+            }
+            return res.send(objContracts);
+        }   
 
-        if (path.extname(req.files.delayed_installments.name) === '.csv') {
-            // open uploaded file
-            // csv.parseFile(req.files.delayed_installments.name)
-            // .on("data", function (data) {
-            //     contracts.push(data); // push each row
-            // })
-            // .on("end", function () {
-            //     console.log(contracts)
-            //     // fs.unlinkSync(req.file.path);   // remove temp file
-            //     //process "fileRows" and respond
-            // });
-        } else {
-            return res.status(400).send('Error, the file is not csv.');
+        if (req.files.delayed_installments) {
+            if (path.extname(req.files.delayed_installments.name) === '.csv') {
+                // open uploaded file
+                const installments = csvjson.toObject(req.files.contracts.data.toString());
+                // console.log(jsonObj);
+            } else {
+                return res.status(400).send('Error, the file is not csv.');
+            }
         }
-         
-        // req.files.contracts.data.on('data', (chunk) => {
-        //     // chunks.push(chunk); // push data chunk to array
-        //     console.log(chunk);
-        //     // We can perform actions on the partial data we have so far!
-        // });
-        console.log(req.files.delayed_installments.data)
-        // csv.parseStream(req.files.delayed_installments.data).on('error', error => console.error(error)).on('data', row => console.log(row)).on('end', rowCount => console.log(`Parsed ${rowCount} rows`));
-        const jsonObj = csvjson.toObject(req.files.delayed_installments.data.toString());
-        console.log(jsonObj[0]['contract_id']);
-        return res.send('Files uploaded!');
+        return res.send('Files uploaded!',objContracts);
     },
     
     async store_upload(req, res, next){
