@@ -13,7 +13,5 @@ var upload = multer({ dest: 'uploads/', fileFilter:  (req, file, cb) => {
             cb(null, true)
         }});
 routes.post('/',ContractController.store);
-// routes.post('/upload',upload.any(),ContractController.store_upload);
-routes.post('/upload',upload.single('contracts'),ContractController.store_upload);
 
 module.exports = routes;
