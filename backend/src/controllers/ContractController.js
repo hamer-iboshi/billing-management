@@ -80,20 +80,5 @@ module.exports = {
             }
         }
         return res.send('Files uploaded!',objContracts, objDInstallments);
-    },
-    
-    async store_upload(req, res, next){
-        console.log(req.files)
-        console.log(req.body)
-        // csv.parseFile(req.files.contracts.name)
-        // .on("data", function (data) {
-        //     contracts.push(data); // push each row
-        // })
-        // .on("end", function () {
-        //     console.log(contracts)
-        //     // fs.unlinkSync(req.file.path);   // remove temp file
-        //     //process "fileRows" and respond
-        // });
-        return res.send('File uploaded!');
     }
 };
