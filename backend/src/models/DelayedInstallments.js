@@ -2,7 +2,7 @@ const { Schema, model } = require('mongoose');
 
 const DelayedInstallmentSchema = new Schema({
     contract_id: { //contract_id
-        type: Schema.Types.ObjectId,
+        type: String,
         ref: 'Contract'
     }, 
     installment_index: {
