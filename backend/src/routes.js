@@ -1,17 +1,12 @@
-const path = require('path');
 const express = require('express');
 const ContractController = require('./controllers/ContractController');
 const DelayedInstallment = require('./controllers/DelayedInstallmentController');
-const multer = require('multer');
+const BankSlip = require('./controllers/BankSlipController');
 const routes = express.Router();
 
-var storage = multer.memoryStorage();
-var upload = multer({ dest: 'uploads/', fileFilter:  (req, file, cb) => {
-            if ((file.mimetype) !== 'text/csv') {
-                return cb(new Error('Only CSVs are allowed!'))
-            }
-            cb(null, true)
-        }});
+routes.get('/',ContractController.index);
 routes.post('/',ContractController.store);
+routes.get('/:contractId/contract',ContractController.show);
+routes.get('/:contractId/schedule',BankSlip.store);
 
 module.exports = routes;

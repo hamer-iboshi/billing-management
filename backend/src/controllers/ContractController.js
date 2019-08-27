@@ -2,83 +2,110 @@ const path = require('path');
 const csvjson = require('csvjson');
 const Contract = require('../models/Contracts');
 const DelayedInstallments = require('../models/DelayedInstallments');
+const BankSlips = require('../models/BankSlips');
 
 module.exports = {
-    async store(req, res, next){
+    
+    async index(req, res){
+        let contracts = await Contract.find({},'-delayed_installments');
+        res.json(contracts);
+    },
+
+    async store(req, res){
         let objContracts = [];
         let objDInstallments = [];
-        if (req.files.delayed_installments) {
-            if (!('contracts' in req.files) && !('delayed_installments' in req.files)) {
-                return res.status(400).send('No files were uploaded.');
-            }
-            if (path.extname(req.files.contracts.name) === '.csv') {
-                // open uploaded file
-                
-                const contracts = csvjson.toObject(req.files.contracts.data.toString());
-                for(let i in contracts) {
-                    console.log(contracts[i])
-                    let contractExists = await Contract.findOne({ _id: contracts[i].external_id });
-                    if (contractExists) {
-                        objContracts.push(contractExists);
-                    } else {
-                        const { 
-                            external_id : _id, 
-                            customer_name,
-                            customer_email,
-                            customer_cpf,
-                            loan_value,
-                            payment_term,
-                            realty_address
-                        } = contracts[i];
-                        const objContract = await Contract.create({
-                            _id,
-                            customer_name,
-                            customer_email,
-                            customer_cpf,
-                            loan_value,
-                            payment_term,
-                            realty_address
-                        });
-                        objContracts.push(objContract);
-                    }
-                }
-            } else {
-                return res.status(400).send('Error, the file is not csv.');
-            }
-        }   
-        if (req.files.delayed_installments) {
-            console.log(req.files.delayed_installments);
-            if (path.extname(req.files.delayed_installments.name) === '.csv') {
-                // open uploaded file
-                const delayed_installments = csvjson.toObject(req.files.delayed_installments.data.toString());
-                for(let i in delayed_installments) {
-                    console.log(delayed_installments[i])
-                    let contractExists = await Contract.findOne({ _id: delayed_installments[i]['contract_id'] });
-                    if (!contractExists) {
-                        objDInstallments.push({
-                            'installment_index': delayed_installments[i]['installment_index'],
-                            'error' : 'Contract_id not found'
-                        });
-                    } else {
-                        let installmentExists = await DelayedInstallments.findOne({ installment_index: delayed_installments[i]['installment_index'] });
-                        if (installmentExists) {
-                            objDInstallments.push(installmentExists);
-                        } else {
-                            console.log("teste",delayed_installments[i]);
-                            const objDInstallment = await DelayedInstallments.create({
-                                'contract_id': contractExists._id,
-                                'installment_index': delayed_installments[i]['installment_index'],
-                                'due_date': delayed_installments[i]['due_date'],
-                                'value': delayed_installments[i]['value']
-                            });
-                            objDInstallments.push(objDInstallment);
-                        }
-                    }
-                }
-            } else {
-                return res.status(400).send('Error, the file is not csv.');
-            }
+        //Check input names
+        if (!('contracts' in req.files) && !('delayed_installments' in req.files)) {
+            return res.status(400).send('No files were uploaded.');
         }
+        //Check file extesion of contracts field
+        if (path.extname(req.files.contracts.name) === '.csv') {
+            //Convert csv to json file
+            let contracts = csvjson.toObject(req.files.contracts.data.toString());
+            for (let i in contracts) {
+                // Check if the contract already exists
+                let contractExists = await Contract.findOne({ _id: contracts[i].external_id });
+                if (contractExists) {
+                    objContracts.push(contractExists);
+                } else {
+                    const { 
+                        external_id : _id, 
+                        customer_name,
+                        customer_email,
+                        customer_cpf,
+                        loan_value,
+                        payment_term,
+                        realty_address
+                    } = contracts[i];
+                    //Insert contract
+                    const objContract = await Contract.create({
+                        _id,
+                        customer_name,
+                        customer_email,
+                        customer_cpf,
+                        loan_value,
+                        payment_term,
+                        realty_address
+                    });
+                    objContracts.push(objContract);
+                }
+            }
+        } else {
+            return res.status(400).send('Error, the file is not csv.');
+        }
+        //Check file extesion of delayed_installment field
+        if (path.extname(req.files.delayed_installments.name) === '.csv') {
+            //Convert csv to json file
+            let delayed_installments = csvjson.toObject(req.files.delayed_installments.data.toString());
+            for (let i in delayed_installments) {
+                //Check if the contract in the delayed_installment exists
+                let DIContractExists = await Contract.findOne({ _id: delayed_installments[i]['contract_id'] });
+                if (!DIContractExists) {
+                    objDInstallments.push({
+                        'installment_index': delayed_installments[i]['installment_index'],
+                        'error' : 'Contract_id not found'
+                    });
+                } else {
+                    // Check if the delayed_installment already exists
+                    let installmentExists = await DelayedInstallments.findOne({ installment_index: delayed_installments[i]['installment_index'] });
+                    if (installmentExists) {
+                        objDInstallments.push(installmentExists);
+                    } else {
+                        console.log("teste",delayed_installments[i]);
+                        //Insert delayed_installment
+                        const objDInstallment = await DelayedInstallments.create({
+                            'contract_id': DIContractExists._id,
+                            'installment_index': delayed_installments[i]['installment_index'],
+                            'due_date': delayed_installments[i]['due_date'],
+                            'value': delayed_installments[i]['value']
+                        });
+                        //Insert delayed_installment reference in contract
+                        DIContractExists.delayed_installments.push(objDInstallment._id);
+                        DIContractExists.save();
+                        objDInstallments.push(objDInstallment);
+                    }
+                }
+            }
+        } else {
+            return res.status(400).send('Error, the file is not csv.');
+        }
+        // return the existent or inserted data
         return res.send('Files uploaded!',objContracts, objDInstallments);
+    },
+
+    async show(req, res){
+        const { contractId } = req.params;
+        let contract = await Contract.findOne({_id : contractId});
+        let delayed_installments = await DelayedInstallments.find({contract_id : contract._id});
+        let bank_slips = await BankSlips.find({contract_id : contract._id});
+        today = new Date();
+        due_date = new Date("2019-08-10");
+        delayed_data = new Date(today.getTime() - due_date.getTime());
+        console.log(delayed_data.getTime() / (1000 * 3600 * 24));
+        res.json({ 
+            'contract' : contract, 
+            'installments' : delayed_installments, 
+            'bank_slips' : bank_slips
+        });
     }
 };
