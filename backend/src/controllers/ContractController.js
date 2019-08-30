@@ -15,7 +15,7 @@ module.exports = {
     async store(req, res){
         let objContracts = [];
         let objDInstallments = [];
-        console.log(req.files)
+        console.log(req.body.contract);
         //Check input names
         if (!('contracts' in req.files) && !('delayed_installments' in req.files)) {
             return res.status(400).send('No files were uploaded.');
