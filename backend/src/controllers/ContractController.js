@@ -8,14 +8,12 @@ module.exports = {
     
     async index(req, res){
         let contracts = await Contract.find({},'-delayed_installments');
-        console.log(contracts);
         res.json(contracts);
     },
 
     async store(req, res){
         let objContracts = [];
         let objDInstallments = [];
-        console.log(req.files)
         //Check input names
         if (!('contracts' in req.files) && !('delayed_installments' in req.files)) {
             return res.status(400).send('No files were uploaded.');
@@ -76,7 +74,6 @@ module.exports = {
                         if (installmentExists) {
                             objDInstallments.push(installmentExists);
                         } else {
-                            console.log("teste",delayed_installments[i]);
                             //Insert delayed_installment
                             const objDInstallment = await DelayedInstallments.create({
                                 'contract_id': DIContractExists._id,
@@ -112,15 +109,9 @@ module.exports = {
                     'delayed_installment' : item, 
                     'days_in_delay' : Math.trunc(days_in_delay.getTime() / (1000 * 3600 * 24))
                 });    
-            });  
-            
-            console.log("oms", inst);
+            });
         });
         let bank_slips = await BankSlips.find({contract_id : contract._id});
-        
-        due_date = new Date("2019-08-10");
-        delayed_data = new Date(today.getTime() - due_date.getTime());
-        console.log(delayed_data.getTime() / (1000 * 3600 * 24));
         res.json({
             'contract' : contract, 
             'installments' : delayed_installments, 
