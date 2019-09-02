@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { Row, Col, Card, Button, Icon } from 'react-materialize';
+import { Row, Col, Card } from 'react-materialize';
+import Button from '@material-ui/core/Button';
+import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import api from '../services/api';
 
 function Upload({ history }) {
@@ -21,6 +23,9 @@ function Upload({ history }) {
         <Row>
             <Col s={12}>
                 <Card>
+                    <Button variant='outlined' href='/contract'>
+                        Contracts Listing
+                    </Button>
                 <form onSubmit={handleSubmit}>
                     <div className="file-field input-field">
                         <div className="btn">
@@ -40,9 +45,9 @@ function Upload({ history }) {
                             <input className="file-path validate" type="text"/>
                         </div>
                     </div>
-                    <Button  waves="light" type="submit" name="action" style={{marginRight: '5px'}}>
+                    <Button variant='outlined' color='primary' type="submit" name="action" style={{marginRight: '5px'}}>
                         Upload
-                        <Icon left></Icon>
+                        <CloudUploadIcon />
                     </Button>
                 </form>      
                 </Card>    

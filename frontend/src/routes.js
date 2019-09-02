@@ -12,7 +12,7 @@ export default function Routes(){
             <Col s={12}>
                     <BrowserRouter>
                         <Route path="/" exact component={Upload}/>
-                        <Route path="/contract" component={Home}/>
+                        <Route path="/contract" exact component={Home}/>
                         <Route path="/contract/:id" component={ContractDetail}/>
                     </BrowserRouter>
             </Col>

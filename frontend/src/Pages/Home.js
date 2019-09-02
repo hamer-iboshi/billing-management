@@ -10,6 +10,7 @@ import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
 import { Link } from 'react-router-dom';
 import api from '../services/api'
+import './Home.css';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -28,7 +29,7 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-export default function SimpleTable() {
+export default function Home({ history }) {
   const classes = useStyles();
   const [contracts, setContracts] = useState([]);
 
@@ -45,10 +46,19 @@ export default function SimpleTable() {
     const response = await api.post('/'+id+'/destroy');
   }
 
+  function showContract(id){
+    history.push(`/contract/${id}`);
+  }
+
   return (
     <Card
       title="Contracts listing"
     >
+      <div className="ButtonDataImport">
+        <Button variant='outlined' href='/' className={classes.button}>
+          Data import
+        </Button>
+      </div>
       <Paper className={classes.root}>    
         <Table className={classes.table}>
           <TableHead>
@@ -78,6 +88,9 @@ export default function SimpleTable() {
                 <TableCell align="right">{contract.payment_term}</TableCell>
                 <TableCell align="right">{contract.realty_address}</TableCell>
                 <TableCell align="right">
+                <Button variant="contained" color="primary" className={classes.button} href={"/contract/"+contract._id}>
+                  View
+                </Button>
                 <Button variant="contained" color="secondary" className={classes.button} onClick={() => destroyContract(contract._id)}>
                   Delete
                 </Button>
