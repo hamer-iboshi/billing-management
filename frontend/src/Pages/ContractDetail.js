@@ -6,9 +6,9 @@ import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
+import Checkbox from '@material-ui/core/Checkbox';
 import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
-import { Link } from 'react-router-dom';
 import api from '../services/api'
 
 const useStyles = makeStyles(theme => ({
@@ -22,6 +22,7 @@ const useStyles = makeStyles(theme => ({
   },
   button: {
     margin: theme.spacing(1),
+    marginTop: 20,
   },
   input: {
     display: 'none',
@@ -30,65 +31,168 @@ const useStyles = makeStyles(theme => ({
 
 export default function ContractDetail({ match }) {
   const classes = useStyles();
-  const [contracts, setContracts] = useState([]);
+  const [contract, setContract] = useState([]);
+  const [delayedInstallments, setDelayedInstallments] = useState([]);
+  const [bankSlips, setBankSlips] = useState([]);
+  const [selectedDelayedInstallments, setSelectedDelayedInstallments] = useState([]);
+  const [selectedBankSlips, setSelectedBankSlips] = useState([]);
 
   useEffect(() => {
-    async function loadContracts() {
+    async function loadData() {
       const contractId = match.params.id;
-      console.log(contractId);
-      const response = await api.get(`/contract/${contractId}`);
-      setContracts(response.data);
+      const response = await api.get(`/${contractId}/contract`);
+      setContract(response.data.contract);
+      setDelayedInstallments(response.data.delayed_installments);
+      setBankSlips(response.data.bank_slips);
     }
-    loadContracts();
+
+    loadData();
   });
 
-  // async function destroyContract(id){
-  //   const response = await api.post('/'+id+'/destroy');
-  // }
+  function handleSelectClickDelayedInstallment(event, id) {
+    if (selectedDelayedInstallments.includes(id)) {
+      let newSelecteds = selectedDelayedInstallments;
+      newSelecteds = newSelecteds.filter(item => item !== id);
+      setSelectedDelayedInstallments(newSelecteds);
+      return;
+    }
+    let newSelecteds = selectedDelayedInstallments;
+    newSelecteds.push(id);
+    setSelectedDelayedInstallments(newSelecteds);
+  }
+
+  function handleSelectClickBankSlips(event, id) {
+    if (selectedBankSlips.includes(id)) {
+      let newSelecteds = selectedBankSlips;
+      newSelecteds = newSelecteds.filter(item => item !== id);
+      setSelectedBankSlips(newSelecteds);
+      return;
+    }
+    let newSelecteds = selectedBank;
+    newSelecteds.push(id);
+    setSelectedBankSlips(newSelecteds);
+  }
+
+  function handleScheduleNewBank(){
+    console.log(selectedDelayedInstallments);
+  }
+
+  function handleMarkAsPaid(){
+    console.log(selectedBankSlips);
+  }
 
   return (
-    <Card
-      title="Contract Detail"
-    >
-      <Button variant="outlined" className={classes.button} href="/contract">Contracts Listing</Button>
-      <Paper className={classes.root}>    
-        <Table className={classes.table}>
-          <TableHead>
-            <TableRow>
-              <TableCell>external_id</TableCell>
-              <TableCell align="right">custumer_name</TableCell>
-              <TableCell align="right">customer_email</TableCell>
-              <TableCell align="right">customer_cpf</TableCell>
-              <TableCell align="right">loan_value</TableCell>
-              <TableCell align="right">payment_term</TableCell>
-              <TableCell align="right">reality_address</TableCell>
-              <TableCell align="right">actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {contracts.map(contract => (
-              <TableRow key={contract._id}>
-                <TableCell component="th" scope="row">
-                  {contract._id}
-                </TableCell>
-                <TableCell component="th" scope="row">
-                  {contract.customer_name}
-                </TableCell>
-                <TableCell align="right">{contract.customer_email}</TableCell>
-                <TableCell align="right">{contract.customer_cpf}</TableCell>
-                <TableCell align="right">{contract.loan_value}</TableCell>
-                <TableCell align="right">{contract.payment_term}</TableCell>
-                <TableCell align="right">{contract.realty_address}</TableCell>
-                <TableCell align="right">
-                <Button variant="contained" color="secondary" className={classes.button} >
-                  Delete
-                </Button>
-                </TableCell>
+    <div id="contract_detail">
+      <Card
+        title={"Contract details #"+contract._id}
+      >
+        <Paper className={classes.root}>   
+          <Button variant="outlined" className={classes.button} href="/contract">Contracts Listing</Button> 
+          <Table className={classes.table}>
+            <TableBody>
+              <TableRow>
+                <TableCell align="right">external_id</TableCell>
+                <TableCell align="left">{contract._id}</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Paper>
-    </Card>
+              <TableRow>
+                <TableCell align="right">custumer_name</TableCell>
+                <TableCell align="left">{contract.customer_name}</TableCell>    
+              </TableRow>
+              <TableRow>
+                <TableCell align="right">customer_email</TableCell>
+                <TableCell align="left">{contract.customer_email}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell align="right">customer_cpf</TableCell>
+                <TableCell align="left">{contract.customer_cpf}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell align="right">loan_value</TableCell>
+                <TableCell align="left">{contract.loan_value}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell align="right">payment_term</TableCell>
+                <TableCell align="left">{contract.payment_term}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell align="right">reality_address</TableCell>
+                <TableCell align="left">{contract.realty_address}</TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </Paper>
+      </Card>
+      <Card title={"Delayed installments"}>
+        <Paper className={classes.root}>    
+          <Table className={classes.table}>
+            <TableHead>
+              <TableRow>
+                <TableCell align="right">installment_index</TableCell>
+                <TableCell align="right">due_date</TableCell>
+                <TableCell align="right">days_in_delay</TableCell>
+                <TableCell align="right">value</TableCell>
+                <TableCell align="right"></TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {delayedInstallments.map(installment => (
+                <TableRow key={installment.delayed_installment._id}>
+                  <TableCell component="th"  align="right" scope="row">
+                    {installment.delayed_installment.installment_index}
+                  </TableCell>
+                  <TableCell align="right" scope="row">
+                    {new Date(installment.delayed_installment.due_date).getFullYear()+"-"+ new Date(installment.delayed_installment.due_date).getMonth()+"-"+ new Date(installment.delayed_installment.due_date).getDate()}
+                  </TableCell>
+                  <TableCell align="right">{installment.days_in_delay}</TableCell>
+                  <TableCell align="right">{installment.delayed_installment.value}</TableCell>
+                  <TableCell padding="checkbox">
+                    <Checkbox
+                      checked={selectedDelayedInstallments.includes(installment.delayed_installment._id) ? true : false}
+                      onClick={e => handleSelectClickDelayedInstallment(e, installment.delayed_installment._id)}
+                      inputProps={{ 'aria-label': 'select all desserts' }}
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Paper>
+        <Button variant="outlined" className={classes.button} onClick={handleScheduleNewBank}>Schedule new bank</Button> 
+      </Card>
+      <Card title={"Banks slips"}>
+        <Paper className={classes.root}>    
+          <Table className={classes.table}>
+            <TableHead>
+              <TableRow>
+                <TableCell align="right">installment_index</TableCell>
+                <TableCell align="right">due_date</TableCell>
+                <TableCell align="right">days_in_delay</TableCell>
+                <TableCell align="right">value</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {bankSlips.map(bank_slip => (
+                <TableRow key={bank_slip._id}>
+                  <TableCell align="right" scope="row">
+                    {new Date(bank_slip.due_date).getFullYear()+"-"+ new Date(bank_slip.due_date).getMonth()+"-"+ new Date(bank_slip.due_date).getDate()}
+                  </TableCell>
+                  <TableCell align="right">{bank_slip.value}</TableCell>
+                  <TableCell align="right" scope="row">{bank_slip.status}</TableCell>
+                  <TableCell align="right">{bank_slip.delay}</TableCell>
+                  <TableCell padding="checkbox">
+                    <Checkbox
+                      checked={selectedBankSlips.includes(bank_slip._id) ? true : false}
+                      onClick={e => handleSelectClickBankSlips(e, bank_slip._id)}
+                      inputProps={{ 'aria-label': 'select all desserts' }}
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Paper>
+        <Button variant="outlined" className={classes.button} onClick={handleScheduleNewBank}>Mark as paid</Button>
+      </Card>
+    </div>
   );
 }

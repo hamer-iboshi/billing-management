@@ -114,7 +114,7 @@ module.exports = {
         let bank_slips = await BankSlips.find({contract_id : contract._id});
         res.json({
             'contract' : contract, 
-            'installments' : delayed_installments, 
+            'delayed_installments' : delayed_installments, 
             'bank_slips' : bank_slips
         });
     },
