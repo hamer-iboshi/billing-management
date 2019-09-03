@@ -28,28 +28,29 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-export default function BankSlipSchedule({ match, location }) {
+export default function BankSlipSchedule({ match, location, history}) {
   const classes = useStyles();
-  const [contract, setContract] = useState([]);
+  const [fee, setFee] = useState([]);
+  const [interest, setInterest] = useState([]);
+  const [dueDate, setDueDate] = useState([]);
   const [selectedDelayedInstallments, setSelectedDelayedInstallments] = useState(location.data ? location.data.delayed_installments : []);
-  const [selectedBankSlips, setSelectedBankSlips] = useState([]);
   const contractId = match.params.id;
 
-  function handleSchedule(event, id) {
-    if (selectedBankSlips.includes(id)) {
-      let newSelecteds = selectedBankSlips;
-      newSelecteds = newSelecteds.filter(item => item !== id);
-      setSelectedBankSlips(newSelecteds);
-      return;
-    }
-    let newSelecteds = selectedBankSlips;
-    newSelecteds.push(id);
-    setSelectedBankSlips(newSelecteds);
+  async function handleSchedule() {
+    const data = {
+      'installments' : selectedDelayedInstallments,
+      'fee_value' : fee,
+      'interest_value' : interest,
+      'due_date' : dueDate,
+      'contract_id' : contractId
+    };
+    const response = await api.post(`/${contractId}/schedule`,data);
+    history.push(`/contract/${contractId}`);
   }
 
   return (
     <div id="bank_slip_schedule">
-      <Card title={"Bank slip schedule for #"+contract._id}>
+      <Card title={"Bank slip schedule for #"+contractId}>
         <Paper className={classes.root}>    
           <Table className={classes.table}>
             <TableHead>
@@ -78,22 +79,24 @@ export default function BankSlipSchedule({ match, location }) {
         </Paper>
         <form onSubmit={handleSchedule}>
           <div className="input-field col s6">
-            <input placeholder="5%" id="fee_value" type="number" className="validate"/>
+            <input placeholder="5%" id="fee_value" type="number" onChange={ e => setFee(e.target.value)} className="validate"/>
             <label htmlFor="fee_value">Fee Value</label>
           </div>
           <div className="input-field col s6">
-            <input placeholder="1%" id="interest_value" type="number" className="validate"/>
+            <input placeholder="1%" id="interest_value" onChange={ e => setInterest(e.target.value)} type="number" className="validate"/>
             <label htmlFor="interest_value">Interest Value</label>
           </div>
           <div className="input-field s6">
             <DatePicker 
+              id="due_date"
               format="mm dd yyyy"
+              onChange={ e => setDueDate(e)}
               minDate={new Date()}
               placeholder={(new Date().getMonth())+"-"+(new Date().getDate())+"-"+(new Date().getFullYear())}
             />
           </div>
         </form>
-        <Button variant="outlined" className={classes.button} onClick={handleSchedule}>Schedule</Button> 
+        <Button variant="outlined" type='submit' name="action"  className={classes.button} onClick={handleSchedule}>Schedule</Button> 
       </Card>
     </div>
   );

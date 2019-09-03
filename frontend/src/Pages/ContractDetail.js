@@ -90,7 +90,11 @@ export default function ContractDetail({ match, history }) {
     });
   }
 
-  function handleMarkAsPaid(){
+  async function handleMarkAsPaid(){
+    let response = [];
+    await selectedBankSlips.forEach(element => {
+       response.push(api.post(`/${element}/payment`));
+    });
     console.log(selectedBankSlips);
   }
 
@@ -177,10 +181,11 @@ export default function ContractDetail({ match, history }) {
           <Table className={classes.table}>
             <TableHead>
               <TableRow>
-                <TableCell align="right">installment_index</TableCell>
                 <TableCell align="right">due_date</TableCell>
-                <TableCell align="right">days_in_delay</TableCell>
                 <TableCell align="right">value</TableCell>
+                <TableCell align="right">status</TableCell>
+                <TableCell align="right">days_in_delay</TableCell>
+                <TableCell align="right"></TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -191,7 +196,11 @@ export default function ContractDetail({ match, history }) {
                   </TableCell>
                   <TableCell align="right">{bank_slip.value}</TableCell>
                   <TableCell align="right" scope="row">{bank_slip.status}</TableCell>
-                  <TableCell align="right">{bank_slip.delay}</TableCell>
+                  <TableCell align="right">
+                  { 
+                    (new Date().getTime() <= new Date(bank_slip.due_date)) ? 0 : Math.trunc(new Date(new Date().getTime() - new Date(bank_slip.due_date)).getTime() / (1000 * 3600 * 24)) 
+                  }
+                  </TableCell>
                   <TableCell padding="checkbox">
                     <Checkbox
                       checked={selectedBankSlips.includes(bank_slip._id) ? true : false}
