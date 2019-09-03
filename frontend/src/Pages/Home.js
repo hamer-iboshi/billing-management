@@ -55,7 +55,7 @@ export default function Home({ history }) {
       title="Contracts listing"
     >
       <div className="ButtonDataImport">
-        <Button variant='outlined' href='/' className={classes.button}>
+        <Button variant='outlined' href='/upload' className={classes.button}>
           Data import
         </Button>
       </div>

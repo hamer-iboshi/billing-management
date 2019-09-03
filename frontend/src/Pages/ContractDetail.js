@@ -10,6 +10,7 @@ import Checkbox from '@material-ui/core/Checkbox';
 import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
 import api from '../services/api'
+import SelectInput from '@material-ui/core/Select/SelectInput';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -29,8 +30,9 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-export default function ContractDetail({ match }) {
+export default function ContractDetail({ match, history }) {
   const classes = useStyles();
+  const contractId = match.params.id;
   const [contract, setContract] = useState([]);
   const [delayedInstallments, setDelayedInstallments] = useState([]);
   const [bankSlips, setBankSlips] = useState([]);
@@ -39,13 +41,11 @@ export default function ContractDetail({ match }) {
 
   useEffect(() => {
     async function loadData() {
-      const contractId = match.params.id;
       const response = await api.get(`/${contractId}/contract`);
       setContract(response.data.contract);
       setDelayedInstallments(response.data.delayed_installments);
       setBankSlips(response.data.bank_slips);
     }
-
     loadData();
   });
 
@@ -68,13 +68,26 @@ export default function ContractDetail({ match }) {
       setSelectedBankSlips(newSelecteds);
       return;
     }
-    let newSelecteds = selectedBank;
+    let newSelecteds = selectedBankSlips;
     newSelecteds.push(id);
     setSelectedBankSlips(newSelecteds);
   }
 
   function handleScheduleNewBank(){
-    console.log(selectedDelayedInstallments);
+    let selectedInstallments = [];
+    for(let i in delayedInstallments){
+      if(selectedDelayedInstallments.includes(delayedInstallments[i].delayed_installment._id)){
+        selectedInstallments.push(delayedInstallments[i]);
+      }
+    }
+    console.log(selectedInstallments.length);
+    if(selectedInstallments.length == 0) return;
+    history.push({
+      pathname: `/bank_slip/${contractId}`,
+      data: {
+        'delayed_installments' : selectedInstallments
+      }
+    });
   }
 
   function handleMarkAsPaid(){
@@ -87,7 +100,7 @@ export default function ContractDetail({ match }) {
         title={"Contract details #"+contract._id}
       >
         <Paper className={classes.root}>   
-          <Button variant="outlined" className={classes.button} href="/contract">Contracts Listing</Button> 
+          <Button variant="outlined" className={classes.button} href="/">Contracts Listing</Button> 
           <Table className={classes.table}>
             <TableBody>
               <TableRow>
@@ -191,7 +204,7 @@ export default function ContractDetail({ match }) {
             </TableBody>
           </Table>
         </Paper>
-        <Button variant="outlined" className={classes.button} onClick={handleScheduleNewBank}>Mark as paid</Button>
+        <Button variant="outlined" className={classes.button} onClick={handleMarkAsPaid}>Mark as paid</Button>
       </Card>
     </div>
   );
