@@ -10,7 +10,6 @@ import Checkbox from '@material-ui/core/Checkbox';
 import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
 import api from '../services/api'
-import SelectInput from '@material-ui/core/Select/SelectInput';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -95,7 +94,7 @@ export default function ContractDetail({ match, history }) {
     await selectedBankSlips.forEach(element => {
        response.push(api.post(`/${element}/payment`));
     });
-    console.log(selectedBankSlips);
+    history.push(`/`);
   }
 
   return (
