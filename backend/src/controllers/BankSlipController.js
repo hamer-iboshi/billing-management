@@ -33,13 +33,12 @@ module.exports = {
 
     async bankSlipsPayment(req, res){
         const { bankSlipId } = req.params;
-        bankSlip = await BankSlips.findOne({ '_id' : bankSlipId});
-        bankSlip.installments.forEach(installmentId => {
-            let response = DelayedInstallments.findOne({ '_id' : installmentId}).deleteOne();
-            console.log(response);
-        });
+        bankSlip = await BankSlips.findOne({ '_id' : bankSlipId });
+        if (bankSlip.status == 'paid') return res.send('Bank Slip already paid!')
+        var response = await DelayedInstallments.deleteMany({ 'contract_id' : bankSlip.contract_id });
+        console.log(response);
         bankSlip.status = 'paid';
         bankSlip.save();
-        res.json(bankSlip);
+        return res.json(bankSlip);
     }
 }

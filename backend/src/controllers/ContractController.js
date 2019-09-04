@@ -121,7 +121,11 @@ module.exports = {
 
     async destroy(req, res){
         const { contractId } = req.params;   
-        let contract = await Contract.findOne({_id : contractId}).deleteOne();
+        let contract = await Contract.findOne({ '_id' : contractId});
+        let installments = await DelayedInstallments.deleteMany({ 'contract_id' : contractId });
+        let bank_slips = await BankSlips.deleteMany({ 'contract_id' : contractId });
+        console.log(installments);
+        contract.deleteOne();
         res.send("Contract removed!");
     }
 };
