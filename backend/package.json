@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
+  "scripts": {
+    "test": "nyc mocha"
+  },
   "dependencies": {
     "axios": "^0.19.0",
     "cors": "^2.8.5",
@@ -16,6 +19,9 @@
     "nodemailer": "^6.3.0"
   },
   "devDependencies": {
-    "nodemon": "^1.19.1"
+    "chai": "^4.2.0",
+    "mocha": "^6.2.0",
+    "nodemon": "^1.19.1",
+    "nyc": "^14.1.1"
   }
 }

@@ -17,3 +17,5 @@ server.use(fileUpload());
 server.use(express.json());
 server.use(routes);
 server.listen(process.env.PORT);
+
+module.exports = server;
