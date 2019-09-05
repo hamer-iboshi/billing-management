@@ -39,13 +39,12 @@ export default function ContractDetail({ match, history }) {
   const [selectedBankSlips, setSelectedBankSlips] = useState([]);
 
   useEffect(() => {
-    async function loadData() {
-      const response = await api.get(`/${contractId}/contract`);
+    api.get(`/${contractId}/contract`).then( response  => {
+      console.log(response);
       setContract(response.data.contract);
       setDelayedInstallments(response.data.delayed_installments);
       setBankSlips(response.data.bank_slips);
-    }
-    loadData();
+    });
   });
 
   function handleSelectClickDelayedInstallment(event, id) {
