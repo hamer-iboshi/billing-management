@@ -53,11 +53,12 @@ module.exports = {
             }
             console.log('Message %s sent: %s', info.messageId, info.response);
         });
-        return res.json(bank_slip);
+        return res.send({'bank_slip' : bank_slip });
     },
 
     async bankSlipsPayment(req, res){
         const { bankSlipId } = req.params;
+        console.log(bankSlipId);
         bankSlip = await BankSlips.findOne({ '_id' : bankSlipId });
         if (bankSlip.status == 'paid') return res.send('Bank Slip already paid!')
         var response = await DelayedInstallments.deleteMany({ 'contract_id' : bankSlip.contract_id });

@@ -15,8 +15,8 @@ module.exports = {
         let objContracts = [];
         let objDInstallments = [];
         //Check input names
-        if (!('contracts' in req.files) && !('delayed_installments' in req.files)) {
-            return res.status(400).send('No files were uploaded.');
+        if (req.files==null || !('contracts' in req.files) && !('delayed_installments' in req.files)) {
+            return res.status(400).send({ 'message' : 'No files were uploaded.'});
         }
         if(req.files.contracts){
             //Check file extesion of contracts field
@@ -52,7 +52,7 @@ module.exports = {
                     }
                 }
             } else {
-                return res.status(400).send('Error, the file is not csv.');
+                return res.status(400).send({ 'message' : 'Error, the contract file is not csv.'});
             }
         }
         if(req.files.delayed_installments){
@@ -89,11 +89,15 @@ module.exports = {
                     }
                 }
             } else {
-                return res.status(400).send('Error, the file is not csv.');
+                return res.status(400).send({ 'message' : 'Error, the delayed installment file is not csv.'});
             }
         }
         // return the existent or inserted data
-        return res.send('Files uploaded!',objContracts, objDInstallments);
+        return res.send({
+            'message': 'Files uploaded!',
+            'contracts': objContracts, 
+            'delayed_installments': objDInstallments
+        });
     },
 
     async show(req, res){
@@ -124,8 +128,7 @@ module.exports = {
         let contract = await Contract.findOne({ '_id' : contractId});
         let installments = await DelayedInstallments.deleteMany({ 'contract_id' : contractId });
         let bank_slips = await BankSlips.deleteMany({ 'contract_id' : contractId });
-        console.log(installments);
         contract.deleteOne();
-        res.send("Contract removed!");
+        res.send({'message': "Contract removed!"});
     }
 };

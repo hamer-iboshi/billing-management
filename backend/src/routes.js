@@ -1,6 +1,5 @@
 const express = require('express');
 const ContractController = require('./controllers/ContractController');
-const DelayedInstallment = require('./controllers/DelayedInstallmentController');
 const BankSlip = require('./controllers/BankSlipController');
 const routes = express.Router();
 
